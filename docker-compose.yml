@@ -1,0 +1,27 @@
+services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      UPI_IDS_JWT_SECRET: ${UPI_IDS_JWT_SECRET:-dev-secret-change-me}
+      REDIS_URL: redis://redis:6379/0
+      UPI_IDS_AUDIT_PATH: /app/results/audit_log.jsonl
+    depends_on: [redis, postgres]
+    volumes: ["./results:/app/results"]
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+  postgres:
+    image: postgres:16-alpine
+    environment: {POSTGRES_USER: upi, POSTGRES_PASSWORD: upi, POSTGRES_DB: upi_audit}
+    ports: ["5432:5432"]
+  kafka:
+    image: bitnami/kafka:3.7
+    ports: ["9092:9092"]
+    environment:
+      KAFKA_CFG_NODE_ID: 0
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT

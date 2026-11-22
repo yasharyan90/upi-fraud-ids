@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UPI IDS Dashboard</title>
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--fg:#e2e8f0;--muted:#94a3b8;--approve:#22c55e;--challenge:#eab308;--alert:#f97316;--block:#ef4444;--accent:#38bdf8}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--fg)}
+header{padding:16px 24px;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+h1{font-size:18px;margin:0}main{padding:16px 24px;display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.card{background:var(--card);border-radius:12px;padding:16px;border:1px solid #334155}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.tile{border-radius:10px;padding:12px;background:#0b1220;text-align:center}.tile b{display:block;font-size:26px}
+.tile small{color:var(--muted)}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:6px 8px;text-align:left;border-bottom:1px solid #334155}
+.badge{padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;color:#0b1220}
+input,button{padding:8px 10px;border-radius:8px;border:1px solid #475569;background:#0b1220;color:var(--fg)}
+button{background:var(--accent);color:#0b1220;font-weight:600;cursor:pointer;border:0}
+.bar{height:10px;border-radius:5px;background:#334155;position:relative;overflow:hidden}.bar i{position:absolute;top:0;bottom:0;background:var(--accent)}
+.muted{color:var(--muted);font-size:12px}.wide{grid-column:1/-1}pre{white-space:pre-wrap;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const {useState,useEffect,useCallback}=React;const h=React.createElement;
+const COLORS={Approve:'var(--approve)',Challenge:'var(--challenge)',Alert:'var(--alert)',Block:'var(--block)'};
+function Badge({d}){return h('span',{className:'badge',style:{background:COLORS[d]||'#64748b'}},d)}
+function Login({onToken}){
+  const [u,setU]=useState('analyst');const [p,setP]=useState('analyst-secret');const [code,setCode]=useState('');const [stage,setStage]=useState('login');const [err,setErr]=useState('');
+  const login=async()=>{setErr('');const r=await fetch('/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    if(!r.ok){setErr('bad credentials');return}const j=await r.json();if(j.mfa_required){setStage('mfa');setCode(j.demo_code||'')}else onToken(j.access_token)};
+  const verify=async()=>{const r=await fetch('/auth/mfa/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,code})});
+    if(!r.ok){setErr('invalid MFA code');return}onToken((await r.json()).access_token)};
+  return h('div',{className:'card',style:{maxWidth:380,margin:'60px auto'}},h('h2',null,'Analyst sign-in'),
+    stage==='login'?h(React.Fragment,null,h('p',{className:'muted'},'JWT + emulated MFA. Demo accounts: analyst / analyst-secret, admin / admin-secret'),
+      h('div',{style:{display:'grid',gap:8}},h('input',{value:u,onChange:e=>setU(e.target.value)}),h('input',{type:'password',value:p,onChange:e=>setP(e.target.value)}),h('button',{onClick:login},'Sign in')))
+    :h(React.Fragment,null,h('p',{className:'muted'},'Enter the one-time code (prototype: pre-filled from the emulated SMS channel).'),
+      h('div',{style:{display:'grid',gap:8}},h('input',{value:code,onChange:e=>setCode(e.target.value)}),h('button',{onClick:verify},'Verify MFA'))),
+    err&&h('p',{style:{color:'var(--block)'}},err))}
+function Shap({ex}){if(!ex)return h('p',{className:'muted'},'no attribution');const m=Math.max(...ex.attributions.map(a=>Math.abs(a.shap)))||1;
+  return h('div',null,h('div',{className:'muted'},'base value φ₀ = '+ex.base_value.toFixed(3)),ex.attributions.map(a=>h('div',{key:a.feature,style:{margin:'6px 0'}},
+    h('div',{style:{display:'flex',justifyContent:'space-between',fontSize:12}},h('span',null,a.feature,' = ',a.value.toFixed(2)),h('span',{style:{color:a.shap>0?'var(--block)':'var(--approve)'}},(a.shap>0?'+':'')+a.shap.toFixed(3))),
+    h('div',{className:'bar'},h('i',{style:{left:a.shap<0?(50-50*Math.abs(a.shap)/m)+'%':'50%',width:(50*Math.abs(a.shap)/m)+'%',background:a.shap>0?'var(--block)':'var(--approve)'}})))))}
+function App(){const [token,setToken]=useState(()=>{try{return localStorage.getItem('upi_ids_token')||''}catch(e){return ''}});
+  const [stats,setStats]=useState(null);const [alerts,setAlerts]=useState([]);const [drift,setDrift]=useState(null);const [sel,setSel]=useState(null);
+  const api=useCallback(async p=>{const r=await fetch(p,{headers:{Authorization:'Bearer '+token}});if(r.status===401||r.status===403){setToken('');return null}return r.json()},[token]);
+  useEffect(()=>{if(!token)return;try{localStorage.setItem('upi_ids_token',token)}catch(e){}
+    const tick=async()=>{const [s,a,d]=await Promise.all([api('/api/v1/stats'),api('/api/v1/alerts?limit=40'),api('/api/v1/drift')]);if(s)setStats(s);if(a)setAlerts(a);if(d)setDrift(d)};
+    tick();const id=setInterval(tick,2000);return()=>clearInterval(id)},[token,api]);
+  if(!token)return h(Login,{onToken:setToken});
+  const c=stats?stats.counts:{};const total=c.total||0;
+  return h(React.Fragment,null,
+    h('header',null,h('h1',null,'UPI Real-Time Intrusion Detection — Admin Dashboard'),h('div',{className:'muted'},'rules + XGBoost + Isolation Forest · SHAP explainability · ',h('a',{href:'#',onClick:()=>setToken(''),style:{color:'var(--accent)'}},'sign out'))),
+    h('main',null,
+      h('div',{className:'card wide'},h('h3',null,'Live policy decisions'),h('div',{className:'tiles'},['total','Approve','Challenge','Alert','Block'].map(k=>h('div',{className:'tile',key:k},h('b',{style:{color:COLORS[k]||'var(--fg)'}},c[k]||0),h('small',null,k==='total'?'scored':k+(total?' · '+(100*(c[k]||0)/total).toFixed(1)+'%':''))))),
+        stats&&h('p',{className:'muted'},'policy thresholds τ₁='+stats.policy.thresholds.challenge+' τ₂='+stats.policy.thresholds.alert+' τ₃='+stats.policy.thresholds.block+' · weights rule='+stats.policy.weights.rule+' supervised='+stats.policy.weights.supervised+' anomaly='+stats.policy.weights.anomaly)),
+      h('div',{className:'card',style:{gridColumn:'span 2'}},h('h3',null,'Fraud alerts & triage queue'),
+        h('table',null,h('thead',null,h('tr',null,h('th',null,'txn'),h('th',null,'decision'),h('th',null,'risk'),h('th',null,'rule'),h('th',null,'xgb'),h('th',null,'iso'),h('th',null,'rules triggered'),h('th',null,'ms'))),
+          h('tbody',null,alerts.map(a=>h('tr',{key:a.txn_id,onClick:()=>setSel(a),style:{cursor:'pointer',background:sel&&sel.txn_id===a.txn_id?'#0b1220':''}},
+            h('td',null,a.txn_id.slice(-10)),h('td',null,h(Badge,{d:a.decision})),h('td',null,a.risk_score.toFixed(3)),h('td',null,a.engines.rule_score.toFixed(2)),h('td',null,a.engines.xgboost_probability.toFixed(3)),h('td',null,a.engines.isolation_forest_anomaly.toFixed(2)),h('td',{className:'muted'},a.engines.rules_triggered.join(', ')||'—'),h('td',null,a.latency_ms.total.toFixed(1))))))),
+      h('div',{className:'card'},h('h3',null,'SHAP explanation'),sel?h(React.Fragment,null,h('p',{className:'muted'},sel.txn_id,' · ',h(Badge,{d:sel.decision})),h(Shap,{ex:sel.explanation})):h('p',{className:'muted'},'select an alert to see per-transaction feature attributions')),
+      h('div',{className:'card wide'},h('h3',null,'Concept-drift monitor (PSI)'),drift?h(React.Fragment,null,h('p',{className:'muted'},'status: ',h('b',{style:{color:drift.status==='drift'?'var(--block)':'var(--approve)'}},drift.status),' · window n=',drift.n,drift.retrain_recommended?' · retraining recommended':''),
+        h('div',{className:'tiles'},Object.entries(drift.psi||{}).map(([k,v])=>h('div',{className:'tile',key:k},h('b',{style:{fontSize:18,color:v>0.2?'var(--block)':v>0.1?'var(--challenge)':'var(--approve)'}},v.toFixed(3)),h('small',null,k))))):h('p',{className:'muted'},'loading…'))))}
+ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script>
+</body>
+</html>

@@ -1,0 +1,328 @@
+{
+  "dataset": {
+    "n_train": 40000,
+    "train_fraud": 400,
+    "n_eval": 10000,
+    "eval_fraud": 100,
+    "eval_legit": 9900,
+    "features": [
+      "Txn_Amount",
+      "z_amt",
+      "Merchant_Type",
+      "Txn_Count_1Hr",
+      "Inter_Txn_Gap",
+      "Distance_From_Home",
+      "Device_Fingerprint",
+      "Sender_Receiver_Rel",
+      "Account_History_Idx",
+      "Hour_Of_Day"
+    ],
+    "fraud_types_eval": {
+      "none": 9900,
+      "velocity_burst": 52,
+      "account_takeover": 14,
+      "high_value_mule": 13,
+      "subtle": 12,
+      "night_anomaly": 9
+    }
+  },
+  "thresholds": {
+    "XGBoost (Proposed)": 0.20999999999999996,
+    "Random Forest": 0.4099999999999999,
+    "SVM (RBF)": 0.7699999999999999,
+    "Decision Tree": 0.9299999999999999,
+    "Logistic Regression": 0.95,
+    "MLP": 0.9299999999999999
+  },
+  "metrics": {
+    "XGBoost (Proposed)": {
+      "TP": 82,
+      "TN": 9875,
+      "FP": 25,
+      "FN": 18,
+      "accuracy": 0.9957,
+      "precision": 0.7663551401869159,
+      "recall": 0.82,
+      "f1": 0.7922705314009661,
+      "fpr": 0.0025252525252525255,
+      "fnr": 0.18
+    },
+    "Random Forest": {
+      "TP": 80,
+      "TN": 9890,
+      "FP": 10,
+      "FN": 20,
+      "accuracy": 0.997,
+      "precision": 0.8888888888888888,
+      "recall": 0.8,
+      "f1": 0.8421052631578948,
+      "fpr": 0.00101010101010101,
+      "fnr": 0.2
+    },
+    "SVM (RBF)": {
+      "TP": 53,
+      "TN": 9831,
+      "FP": 69,
+      "FN": 47,
+      "accuracy": 0.9884,
+      "precision": 0.4344262295081967,
+      "recall": 0.53,
+      "f1": 0.47747747747747754,
+      "fpr": 0.0069696969696969695,
+      "fnr": 0.47
+    },
+    "Decision Tree": {
+      "TP": 72,
+      "TN": 9879,
+      "FP": 21,
+      "FN": 28,
+      "accuracy": 0.9951,
+      "precision": 0.7741935483870968,
+      "recall": 0.72,
+      "f1": 0.7461139896373057,
+      "fpr": 0.0021212121212121214,
+      "fnr": 0.28
+    },
+    "Logistic Regression": {
+      "TP": 70,
+      "TN": 9844,
+      "FP": 56,
+      "FN": 30,
+      "accuracy": 0.9914,
+      "precision": 0.5555555555555556,
+      "recall": 0.7,
+      "f1": 0.6194690265486726,
+      "fpr": 0.0056565656565656566,
+      "fnr": 0.3
+    },
+    "MLP": {
+      "TP": 66,
+      "TN": 9885,
+      "FP": 15,
+      "FN": 34,
+      "accuracy": 0.9951,
+      "precision": 0.8148148148148148,
+      "recall": 0.66,
+      "f1": 0.7292817679558011,
+      "fpr": 0.0015151515151515152,
+      "fnr": 0.34
+    },
+    "Isolation Forest": {
+      "TP": 38,
+      "TN": 9785,
+      "FP": 115,
+      "FN": 62,
+      "accuracy": 0.9823,
+      "precision": 0.24836601307189543,
+      "recall": 0.38,
+      "f1": 0.3003952569169961,
+      "fpr": 0.011616161616161616,
+      "fnr": 0.62
+    },
+    "Rule Engine": {
+      "TP": 25,
+      "TN": 9898,
+      "FP": 2,
+      "FN": 75,
+      "accuracy": 0.9923,
+      "precision": 0.9259259259259259,
+      "recall": 0.25,
+      "f1": 0.39370078740157477,
+      "fpr": 0.00020202020202020202,
+      "fnr": 0.75
+    },
+    "Hybrid Risk Engine": {
+      "TP": 73,
+      "TN": 9899,
+      "FP": 1,
+      "FN": 27,
+      "accuracy": 0.9972,
+      "precision": 0.9864864864864865,
+      "recall": 0.73,
+      "f1": 0.839080459770115,
+      "fpr": 0.00010101010101010101,
+      "fnr": 0.27
+    }
+  },
+  "hybrid": {
+    "weights": {
+      "rule": 0.3,
+      "supervised": 0.5,
+      "anomaly": 0.2
+    },
+    "policy_thresholds": {
+      "challenge": 0.3,
+      "alert": 0.6,
+      "block": 0.85
+    },
+    "decision_distribution": {
+      "Approve": 9879,
+      "Alert": 52,
+      "Challenge": 47,
+      "Block": 22
+    },
+    "decision_by_class": {
+      "0": {
+        "Alert": 1,
+        "Approve": 9861,
+        "Block": 0,
+        "Challenge": 38
+      },
+      "1": {
+        "Alert": 51,
+        "Approve": 18,
+        "Block": 22,
+        "Challenge": 9
+      }
+    }
+  },
+  "shap_global_importance": {
+    "Merchant_Type": 3.8808999061584473,
+    "Inter_Txn_Gap": 1.2030400037765503,
+    "Txn_Amount": 1.1607099771499634,
+    "z_amt": 1.0366100072860718,
+    "Distance_From_Home": 0.7062900066375732,
+    "Hour_Of_Day": 0.6926299929618835,
+    "Device_Fingerprint": 0.6703000068664551,
+    "Account_History_Idx": 0.5559999942779541,
+    "Txn_Count_1Hr": 0.30814000964164734,
+    "Sender_Receiver_Rel": 0.13165000081062317
+  },
+  "shap_sample_fraud_explanations": [
+    {
+      "base_value": 0.17968907952308655,
+      "attributions": [
+        {
+          "feature": "Merchant_Type",
+          "value": 0.2,
+          "shap": -3.5418665409088135
+        },
+        {
+          "feature": "Txn_Amount",
+          "value": 191.08,
+          "shap": -2.745544672012329
+        },
+        {
+          "feature": "Hour_Of_Day",
+          "value": 1.0,
+          "shap": 2.5266916751861572
+        },
+        {
+          "feature": "Inter_Txn_Gap",
+          "value": 235491.52265048027,
+          "shap": -0.9189241528511047
+        },
+        {
+          "feature": "Device_Fingerprint",
+          "value": 0.0,
+          "shap": -0.6772636771202087
+        }
+      ]
+    },
+    {
+      "base_value": 0.17968907952308655,
+      "attributions": [
+        {
+          "feature": "Account_History_Idx",
+          "value": 2.2211302211302213,
+          "shap": 2.3515093326568604
+        },
+        {
+          "feature": "Device_Fingerprint",
+          "value": 1.0,
+          "shap": 1.7085366249084473
+        },
+        {
+          "feature": "Txn_Amount",
+          "value": 9616.3,
+          "shap": 1.509034276008606
+        },
+        {
+          "feature": "Distance_From_Home",
+          "value": 1558.6871082863215,
+          "shap": 1.345917820930481
+        },
+        {
+          "feature": "z_amt",
+          "value": 3.2447667895963086,
+          "shap": 1.0409324169158936
+        }
+      ]
+    },
+    {
+      "base_value": 0.17968907952308655,
+      "attributions": [
+        {
+          "feature": "Inter_Txn_Gap",
+          "value": 240447.9069943428,
+          "shap": -1.5488178730010986
+        },
+        {
+          "feature": "Distance_From_Home",
+          "value": 117.7243573313849,
+          "shap": 1.3276957273483276
+        },
+        {
+          "feature": "Hour_Of_Day",
+          "value": 11.0,
+          "shap": -1.113457441329956
+        },
+        {
+          "feature": "Device_Fingerprint",
+          "value": 0.0,
+          "shap": -1.0881842374801636
+        },
+        {
+          "feature": "z_amt",
+          "value": 0.5749380936315976,
+          "shap": -0.9785884618759155
+        }
+      ]
+    }
+  ],
+  "latency_ms": {
+    "Rule Engine": {
+      "mean_ms": 0.12412798008881509,
+      "p50_ms": 0.12383298599161208,
+      "p95_ms": 0.12708508293144405
+    },
+    "XGBoost (Proposed)": {
+      "mean_ms": 0.07506527355872095,
+      "p50_ms": 0.07214548531919718,
+      "p95_ms": 0.08331249409820886
+    },
+    "Isolation Forest": {
+      "mean_ms": 2.0119771444781995,
+      "p50_ms": 2.0222085004206747,
+      "p95_ms": 2.05819578259252
+    },
+    "Random Forest": {
+      "mean_ms": 14.703263302023212,
+      "p50_ms": 14.779229037230834,
+      "p95_ms": 15.608863107627258
+    },
+    "SVM (RBF)": {
+      "mean_ms": 0.12953827254629383,
+      "p50_ms": 0.12835400411859155,
+      "p95_ms": 0.1396732113789767
+    },
+    "Hybrid (sequential 3 engines + policy)": {
+      "mean_ms": 2.19107481961449,
+      "p50_ms": 2.1948544890619814,
+      "p95_ms": 2.2606127546168864
+    },
+    "Hybrid (parallel bound = slowest branch)": {
+      "mean_ms": 2.0119771444781995,
+      "p50_ms": 2.0222085004206747,
+      "p95_ms": 2.05819578259252
+    }
+  },
+  "train_time_s": {
+    "XGBoost (Proposed)": 0.434410999994725,
+    "Random Forest": 2.0513287499779835,
+    "SVM (RBF)": 10.174626291031018,
+    "Decision Tree": 0.0997145000146702,
+    "Logistic Regression": 0.0254042079905048,
+    "MLP": 7.342596707982011
+  }
+}

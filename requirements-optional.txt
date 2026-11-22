@@ -1,0 +1,4 @@
+# Optional infrastructure backends (the prototype runs fully in-memory without them)
+redis>=5.0
+kafka-python>=2.0
+psycopg2-binary>=2.9
