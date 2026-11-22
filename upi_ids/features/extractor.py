@@ -48,7 +48,7 @@ class FeatureExtractor:
         else:
             z = 0.0
         last = c.last_ts(user)
-        gap = (ts - last) if last is not None else 86400.0 * 7
+        gap = max(ts - last, 0.0) if last is not None else 86400.0 * 7  # clamp: out-of-order / replayed events
         home = c.home(user)
         if home is not None and lat == lat and lon == lon:
             dist = float(haversine_km(home[0], home[1], lat, lon))

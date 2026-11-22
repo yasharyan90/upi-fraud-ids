@@ -18,6 +18,11 @@
 
 </div>
 
+<p align="center">
+  <img src="docs/demo.gif" alt="Live demo of the UPI intrusion-detection dashboard: analyst sign-in with MFA, real-time Approve/Challenge/Alert/Block decisions, fraud triage queue, SHAP explanations and PSI drift monitor" width="900"/>
+  <br/><sub>Live demo: analyst sign-in with emulated MFA → real-time policy decisions → fraud triage queue with per-transaction SHAP attributions → PSI concept-drift monitor</sub>
+</p>
+
 ---
 
 ## 📖 Overview
@@ -305,6 +310,10 @@ curl -s -X POST localhost:8000/api/v1/score \
 
 The React administrative console at `/` provides centralised operational visibility: live Approve / Challenge / Alert / Block tiles, a fraud triage queue with per-engine scores and triggered rules, a **per-transaction SHAP panel**, and the PSI concept-drift monitor with retraining recommendations. Sign in with an analyst account and complete the emulated MFA step.
 
+<p align="center"><img src="docs/dashboard.png" alt="UPI IDS admin dashboard" width="900"/></p>
+
+To reproduce the demo locally: `upi-ids train`, then `upi-ids serve --model results/models/hybrid_detector.pkl`, open http://localhost:8000, sign in as `analyst / analyst-secret`, paste the one-time code returned by the login step, and generate traffic with `python scripts/demo_client.py` or `upi-ids simulate`.
+
 ---
 
 ## ⚙️ Configuration
@@ -342,7 +351,7 @@ upi-fraud-ids/
 │   ├── pipeline.py                HybridDetector (train / score / save / load)
 │   └── cli.py                     `upi-ids` command-line interface
 ├── configs/default.yaml           Tunable configuration
-├── docs/Research_Paper.pdf        The paper
+├── docs/                          Research_Paper.pdf · demo.gif · dashboard.png
 ├── results/                       metrics.json · results_tables.md · figures/
 ├── scripts/                       run_experiment.py · simulate_stream.py · demo_client.py
 ├── tests/                         pytest suite
