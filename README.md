@@ -30,7 +30,7 @@ Transaction Ingestion -> Preprocessing & Feature Extraction -> Parallel Detectio
 ## Quick start
 
 ```bash
-git clone https://github.com/<your-user>/upi-fraud-ids.git
+git clone https://github.com/yasharyan90/upi-fraud-ids.git
 cd upi-fraud-ids
 pip install -r requirements.txt
 pip install -e .
